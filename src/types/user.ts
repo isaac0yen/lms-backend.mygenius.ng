@@ -1,52 +1,60 @@
-interface UserRole {
-  ADMIN: UserRole;
-  USER: UserRole;
+enum Role {
+  ADMIN = 'ADMIN',
+  STUDENT = 'STUDENT'
 }
 
-interface UserStatus {
-  ACTIVE: UserStatus;
-  INACTIVE: UserStatus;
+enum Status {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED'
 }
 
-interface Gender {
-  MALE: Gender;
-  FEMALE: Gender;
-}
-
-interface PhoneNumber {
-  prefix: string;
-  number: string;
+enum Gender {
+  MALE = 'MALE',
+  FEMALE = 'FEMALE'
 }
 
 export interface UserInput {
+  firstName: string;
+  lastName: string;
+  middleName?: string;
   email: string;
-  firstname: string;
-  lastname: string;
-  username: string;
   password: string;
-  phone: PhoneNumber;
-  country: string;
-  state: string;
-  role: UserRole;
+  dateOfBirth: string;
+  religion: string;
+  phoneNumber: string;
   gender: Gender;
 }
 
 export interface User {
   id: number;
+  firstName: string;
+  lastName: string;
+  middleName?: string;
   email: string;
-  firstname: string;
-  lastname: string;
-  username: string;
-  phone: string;
-  country: string;
-  state: string;
-  role: UserRole;
-  status: UserStatus;
+  dateOfBirth: string;
+  religion: string;
+  phoneNumber: string;
   gender: Gender;
-  fcm_token?: string;
-  access_token?: string;
-  refresh_token?: string;
-  created_at: string;
-  location?: string;
-  star_rating?: string;
+  role: Role;
+  status: Status;
+  classId?: number;
+  approvedBy?: User;
+  createdAt: string;
+  updatedAt: string;
+  class?: Class;
+}
+
+export interface Class {
+  id: number;
+  name: string;
+  createdAt: string;
+  users: User[];
+  announcements: Announcement[];
+}
+
+interface Announcement {
+  id: number;
+  content: string;
+  createdAt: string;
 }

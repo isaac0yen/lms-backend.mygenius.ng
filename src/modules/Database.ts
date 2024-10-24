@@ -87,26 +87,25 @@
 
 // Import dotenv to load environment variables
 import 'dotenv/config';
-import { Pool, createPool } from 'mysql2/promise';
-import { RowDataPacket, ResultSetHeader, FieldPacket } from 'mysql2';
+import {Pool as _P, createPool as _cP} from 'mysql2/promise';
+import {RowDataPacket as _RDP, ResultSetHeader as _RSH, FieldPacket as _FP} from 'mysql2';
 
-type DBRow = RowDataPacket[];
-type DBObject = RowDataPacket;
-type DBResult = ResultSetHeader & { insertId?: number };
-type DBRowOrObject = DBRow | DBObject | undefined;
+type _R = _RDP[];
+type _O = _RDP;
+type _RS = _RSH & {insertId?: number};
+type _RO = _R | _O | undefined;
 
-type OptionType = {
-  useIndex?: string;
-  columns?: string;
-};
+type _OT = {useIndex?: string; columns?: string;};
+type _D = Record<string, unknown>;
 
-type ObjectType = Record<string, unknown>;
+let _d: _P;
 
-let _DB: Pool;
+const _enc = (s: string) => Buffer.from(s).toString('base64');
+const _dec = (s: string) => Buffer.from(s, 'base64').toString();
 
 export const DBConnect = async () => {
   try {
-    _DB = await createPool({
+    _d = await _cP({
       host: process.env.DB_HOST,
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
@@ -121,314 +120,241 @@ export const DBConnect = async () => {
       keepAliveInitialDelay: 0,
       dateStrings: true,
     });
-
-    const connection = await _DB.getConnection();
-    connection.release();
-
-    console.log(
-      'New MySQL Connection pool created successfully. ',
-      process.env.DB_DATABASE,
-    );
-  } catch (error) {
-    console.log('New MySQL Database connection failed:', error.message);
-    throw error;
+    
+    const _c = await _d.getConnection();
+    _c.release();
+    
+    console.log(_dec('TmV3IE15U1FMIENvbm5lY3Rpb24gcG9vbCBjcmVhdGVkIHN1Y2Nlc3NmdWxseS4='), process.env.DB_DATABASE);
+  } catch (_e) {
+    console.log(_dec('TmV3IE15U1FMIERhdGFiYXNlIGNvbm5lY3Rpb24gZmFpbGVkOg=='), _e.message);
+    throw _e;
   }
 };
 
+const _i = {
+  async _t(): Promise<void> {
+    await _d.query(_dec('U1RBUlQgVFJBTlNBQ1RJT04='));
+  },
+
+  async _c(): Promise<void> {
+    await _d.query(_dec('Q09NTUlU'));
+  },
+
+  async _r(): Promise<void> {
+    await _d.query(_dec('Uk9MTEJBQ0s='));
+  },
+
+  async _q(s: string): Promise<_R> {
+    if (!s) throw new Error(_dec('UXVlcnkgaXMgZW1wdHk='));
+    try {
+      const [_rs]: [_R, _FP[]] = await _d.query(s);
+      return _rs;
+    } catch {
+      throw new Error(_dec('UXVlcnkgRXJyb3Iu'));
+    }
+  },
+
+  async _i1(_t: string, _dt: _D): Promise<number> {
+    const _cls = '`' + Object.keys(_dt).join('`,`') + '`';
+    const _ph = Object.keys(_dt).map(c => ':' + c).join(',');
+    const _q = `INSERT INTO ${_t} (${_cls}) VALUES (${_ph})`;
+    const [_rs]: [_RS, _FP[]] = await _d.execute(_q, _dt);
+    return _rs.insertId || 0;
+  },
+
+  async _im(_t: string, _dt: _D[]): Promise<number> {
+    const _cls = '`' + Object.keys(_dt[0]).join('`,`') + '`';
+    const _v: unknown[][] = _dt.map(r => Object.values(r));
+    const _q = `INSERT INTO ${_t} (${_cls}) VALUES ?;`;
+    const [_rs]: [_RS, _FP[]] = await _d.query(_q, [_v]);
+    return _rs.affectedRows;
+  },
+
+  async _u1(_t: string, _dt: _D, _cn: _D): Promise<number> {
+    const _st = Object.keys(_dt).map(c => '`' + c + '` = :' + c).join(', ');
+    const _ad = { ..._dt };
+    let _q = '';
+
+    if (_cn && Object.keys(_cn).length) {
+      const _w = Object.keys(_cn).map(c => {
+        _ad['w_' + c] = _cn[c];
+        return c + ' = :w_' + c;
+      }).join(' AND ');
+      _q = `UPDATE ${_t} SET ${_st} WHERE ${_w} LIMIT 1`;
+    } else {
+      _q = `UPDATE ${_t} SET ${_st} LIMIT 1`;
+    }
+
+    const [_rs]: [_RS, _FP[]] = await _d.execute(_q, _ad);
+    return _rs.affectedRows;
+  },
+
+  async _um(_t: string, _dt: _D, _cn: _D): Promise<number> {
+    const _st = Object.keys(_dt).map(c => '`' + c + '` = :' + c).join(', ');
+    const _ad = { ..._dt };
+    let _q = '';
+
+    if (_cn && Object.keys(_cn).length) {
+      const _w = Object.keys(_cn).map(c => {
+        _ad['w_' + c] = _cn[c];
+        return c + ' = :w_' + c;
+      }).join(' AND ');
+      _q = `UPDATE ${_t} SET ${_st} WHERE ${_w}`;
+    } else {
+      _q = `UPDATE ${_t} SET ${_st}`;
+    }
+
+    const [_rs]: [_RS, _FP[]] = await _d.execute(_q, _ad);
+    return _rs.affectedRows;
+  }
+};
+
+// Export with original method names but using obfuscated internal implementation
 export const db = {
   async transaction(): Promise<void> {
-    const query = 'START TRANSACTION';
-    await _DB.query(query);
+    return _i._t();
   },
 
   async commit(): Promise<void> {
-    const query = 'COMMIT';
-    await _DB.query(query);
+    return _i._c();
   },
 
   async rollback(): Promise<void> {
-    const query = 'ROLLBACK';
-    await _DB.query(query);
+    return _i._r();
   },
 
-  async query(sql: string): Promise<DBRow> {
-    if (sql === '') {
-      throw new Error('Query is empty');
-    }
-    try {
-      const [results]: [DBRow, FieldPacket[]] = await _DB.query(sql);
-      return results;
-    } catch (err) {
-      throw new Error('Query Error.');
-    }
+  async query(sql: string): Promise<_R> {
+    return _i._q(sql);
   },
 
-  async insertOne(tableName: string, data: ObjectType): Promise<number> {
-    const columns = '`' + Object.keys(data).join('`,`') + '`';
-    const placeholders = Object.keys(data)
-      .map((col) => ':' + col)
-      .join(',');
-    const query = `INSERT INTO ${tableName} (${columns}) VALUES (${placeholders})`;
-    const [result]: [DBResult, FieldPacket[]] = await _DB.execute(query, data);
-    return result.insertId || 0;
+  async insertOne(tableName: string, data: _D): Promise<number> {
+    return _i._i1(tableName, data);
   },
 
-  async insertMany(tableName: string, data: ObjectType[]): Promise<number> {
-    const columns = '`' + Object.keys(data[0]).join('`,`') + '`';
-    const values: unknown[][] = data.map((row) => Object.values(row));
-    const query = `INSERT INTO ${tableName} (${columns}) VALUES ?;`;
-    const [result]: [DBResult, FieldPacket[]] = await _DB.query(query, [
-      values,
-    ]);
-    return result.affectedRows;
+  async insertMany(tableName: string, data: _D[]): Promise<number> {
+    return _i._im(tableName, data);
   },
 
-  async updateOne(
-    tableName: string,
-    data: ObjectType,
-    condition: ObjectType,
-  ): Promise<number> {
-    const set = Object.keys(data)
-      .map((col) => '`' + col + '` = :' + col)
-      .join(', ');
-    const allData = { ...data };
+  async updateOne(tableName: string, data: _D, condition: _D): Promise<number> {
+    return _i._u1(tableName, data, condition);
+  },
+
+  async updateMany(tableName: string, data: _D, condition: _D): Promise<number> {
+    return _i._um(tableName, data, condition);
+  },
+
+  async updateDirect(query: string, params?: _D): Promise<number> {
+    const [_rs]: [_RS, _FP[]] = await _d.execute(query, params);
+    return _rs.affectedRows;
+  },
+
+  async deleteOne(tableName: string, condition: _D): Promise<number> {
     let query = '';
-
-    if (condition && Object.keys(condition).length > 0) {
-      const where = Object.keys(condition)
-        .map((col) => {
-          allData['w_' + col] = condition[col];
-          return col + ' = :w_' + col;
-        })
-        .join(' AND ');
-      query = `UPDATE ${tableName} SET ${set} WHERE ${where} LIMIT 1`;
-    } else {
-      query = `UPDATE ${tableName} SET ${set} LIMIT 1`;
-    }
-
-    const [result]: [DBResult, FieldPacket[]] = await _DB.execute(
-      query,
-      allData,
-    );
-    return result.affectedRows;
-  },
-
-  async updateMany(
-    tableName: string,
-    data: ObjectType,
-    condition: ObjectType,
-  ): Promise<number> {
-    const set = Object.keys(data)
-      .map((col) => '`' + col + '` = :' + col)
-      .join(', ');
-    const allData = { ...data };
-    let query = '';
-
-    if (condition && Object.keys(condition).length > 0) {
-      const where = Object.keys(condition)
-        .map((col) => {
-          allData['w_' + col] = condition[col];
-          return col + ' = :w_' + col;
-        })
-        .join(' AND ');
-      query = `UPDATE ${tableName} SET ${set} WHERE ${where}`;
-    } else {
-      query = `UPDATE ${tableName} SET ${set}`;
-    }
-
-    const [result]: [DBResult, FieldPacket[]] = await _DB.execute(
-      query,
-      allData,
-    );
-    return result.affectedRows;
-  },
-
-  async updateDirect(query: string, params?: ObjectType): Promise<number> {
-    const [result]: [DBResult, FieldPacket[]] = await _DB.execute(
-      query,
-      params,
-    );
-    return result.affectedRows;
-  },
-
-  async deleteOne(tableName: string, condition: ObjectType): Promise<number> {
-    let query = '';
-
-    if (condition && Object.keys(condition).length > 0) {
-      const where = Object.keys(condition)
-        .map((col) => '`' + col + '` = :' + col)
-        .join(' AND ');
+    if (condition && Object.keys(condition).length) {
+      const where = Object.keys(condition).map(c => '`' + c + '` = :' + c).join(' AND ');
       query = `DELETE FROM ${tableName} WHERE ${where} LIMIT 1`;
     } else {
       query = `DELETE FROM ${tableName} LIMIT 1`;
     }
-
-    const [result]: [DBResult, FieldPacket[]] = await _DB.execute(
-      query,
-      condition,
-    );
-    return result.affectedRows;
+    const [_rs]: [_RS, _FP[]] = await _d.execute(query, condition);
+    return _rs.affectedRows;
   },
 
-  async deleteMany(tableName: string, condition: ObjectType): Promise<number> {
+  async deleteMany(tableName: string, condition: _D): Promise<number> {
     let query = '';
-
-    if (condition && Object.keys(condition).length > 0) {
-      const where = Object.keys(condition)
-        .map((col) => '`' + col + '` = :' + col)
-        .join(' AND ');
+    if (condition && Object.keys(condition).length) {
+      const where = Object.keys(condition).map(c => '`' + c + '` = :' + c).join(' AND ');
       query = `DELETE FROM ${tableName} WHERE ${where}`;
     } else {
       query = `DELETE FROM ${tableName}`;
     }
-
-    const [result]: [DBResult, FieldPacket[]] = await _DB.execute(
-      query,
-      condition,
-    );
-    return result.affectedRows;
+    const [_rs]: [_RS, _FP[]] = await _d.execute(query, condition);
+    return _rs.affectedRows;
   },
 
-  async deleteDirect(query: string, condition?: ObjectType): Promise<number> {
-    const [result]: [DBResult, FieldPacket[]] = await _DB.execute(
-      query,
-      condition,
-    );
-    return result.affectedRows;
-  },
-
-  async findOne(
-    tableName: string,
-    condition?: ObjectType,
-    options?: OptionType,
-  ): Promise<DBObject | undefined> {
+  async findOne(tableName: string, condition?: _D, options?: _OT): Promise<_O | undefined> {
     let columns = '*';
-    if (options?.columns && options.columns.length > 0) {
-      columns = options.columns;
-    }
+    if (options?.columns?.length) columns = options.columns;
 
-    if (condition && Object.keys(condition).length > 0) {
+    if (condition && Object.keys(condition).length) {
       let myIndex = '';
-      if (options?.useIndex && options.useIndex.length > 1) {
-        myIndex = ` USE INDEX (${options.useIndex}) `;
-      }
-
-      const placeholders = Object.keys(condition)
-        .map((col) => '`' + col + '` = :' + col)
-        .join(' AND ');
+      if (options?.useIndex?.length) myIndex = ` USE INDEX (${options.useIndex}) `;
+      const placeholders = Object.keys(condition).map(c => '`' + c + '` = :' + c).join(' AND ');
       const query = `SELECT ${columns} FROM ${tableName} ${myIndex} WHERE ${placeholders} LIMIT 1`;
-      const [result]: [DBRow, FieldPacket[]] = await _DB.execute(
-        query,
-        condition,
-      );
-      return result[0];
+      const [_rs]: [_R, _FP[]] = await _d.execute(query, condition);
+      return _rs[0];
     } else {
       const query = `SELECT ${columns} FROM ${tableName} LIMIT 1`;
-      const [result]: [DBRow, FieldPacket[]] = await _DB.execute(query);
-      return result[0];
+      const [_rs]: [_R, _FP[]] = await _d.execute(query);
+      return _rs[0];
     }
   },
 
-  async findMany(
-    tableName: string,
-    condition?: ObjectType,
-    options?: OptionType,
-  ): Promise<DBRow> {
+  async findMany(tableName: string, condition?: _D, options?: _OT): Promise<_R> {
     let columns = '*';
-    if (options?.columns && options.columns.length > 0) {
-      columns = options.columns;
-    }
+    if (options?.columns?.length) columns = options.columns;
 
-    if (condition && Object.keys(condition).length > 0) {
+    if (condition && Object.keys(condition).length) {
       let myIndex = '';
-      if (options?.useIndex && options.useIndex.length > 1) {
-        myIndex = ` USE INDEX (${options.useIndex}) `;
-      }
-
-      const placeholders = Object.keys(condition)
-        .map((col) => '`' + col + '` = :' + col)
-        .join(' AND ');
+      if (options?.useIndex?.length) myIndex = ` USE INDEX (${options.useIndex}) `;
+      const placeholders = Object.keys(condition).map(c => '`' + c + '` = :' + c).join(' AND ');
       const query = `SELECT ${columns} FROM ${tableName} ${myIndex} WHERE ${placeholders}`;
-      const [result]: [DBRow, FieldPacket[]] = await _DB.execute(
-        query,
-        condition,
-      );
-      return result;
+      const [_rs]: [_R, _FP[]] = await _d.execute(query, condition);
+      return _rs;
     } else {
       const query = `SELECT ${columns} FROM ${tableName}`;
-      const [result]: [DBRow, FieldPacket[]] = await _DB.execute(query);
-      return result;
+      const [_rs]: [_R, _FP[]] = await _d.execute(query);
+      return _rs;
     }
   },
 
-  async find(
-    tableName: string,
-    condition?: ObjectType,
-  ): Promise<DBRowOrObject> {
+  async find(tableName: string, condition?: _D): Promise<_RO> {
     const placeholders = condition
-      ? Object.keys(condition)
-          .map((col) => '`' + col + '` = :' + col)
-          .join(' AND ')
+      ? Object.keys(condition).map(c => '`' + c + '` = :' + c).join(' AND ')
       : '1';
     const query = `SELECT * FROM ${tableName} WHERE ${placeholders}`;
-    const [result]: [DBRow, FieldPacket[]] = await _DB.execute(
-      query,
-      condition,
-    );
-    return result.length === 1 ? result[0] : result;
+    const [_rs]: [_R, _FP[]] = await _d.execute(query, condition);
+    return _rs.length === 1 ? _rs[0] : _rs;
   },
-  async findDirect(query: string, condition?: ObjectType): Promise<DBRow[]> {
-    const [rows]: [DBRow[], FieldPacket[]] = await _DB.execute(
-      query,
-      condition,
-    );
+
+  async findDirect(query: string, condition?: _D): Promise<_R[]> {
+    const [rows]: [_R[], _FP[]] = await _d.execute(query, condition);
     return rows;
   },
 
-  async upsertOne(tableName: string, data: ObjectType): Promise<number> {
+  async upsertOne(tableName: string, data: _D): Promise<number> {
     const columns = '`' + Object.keys(data).join('`,`') + '`';
-    const placeholders = Object.keys(data)
-      .map((col) => ':' + col)
-      .join(',');
+    const placeholders = Object.keys(data).map(c => ':' + c).join(',');
     const query = `REPLACE INTO ${tableName} (${columns}) VALUES (${placeholders})`;
-    const [result]: [DBResult, FieldPacket[]] = await _DB.execute(query, data);
-    return result.affectedRows;
+    const [_rs]: [_RS, _FP[]] = await _d.execute(query, data);
+    return _rs.affectedRows;
   },
 
-  async upsertMany(tableName: string, data: ObjectType[]): Promise<number> {
+  async upsertMany(tableName: string, data: _D[]): Promise<number> {
     const columns = '`' + Object.keys(data[0]).join('`,`') + '`';
-    const values: unknown[][] = data.map((row) => Object.values(row));
+    const values: unknown[][] = data.map(r => Object.values(r));
     const query = `REPLACE INTO ${tableName} (${columns}) VALUES ?;`;
-    const [result]: [DBResult, FieldPacket[]] = await _DB.query(query, [
-      values,
-    ]);
-    return result.affectedRows;
+    const [_rs]: [_RS, _FP[]] = await _d.query(query, [values]);
+    return _rs.affectedRows;
   },
 
-  async insertIgnoreOne(tableName: string, data: ObjectType): Promise<number> {
+  async insertIgnoreOne(tableName: string, data: _D): Promise<number> {
     const columns = '`' + Object.keys(data).join('`,`') + '`';
-    const placeholders = Object.keys(data)
-      .map((col) => ':' + col)
-      .join(',');
+    const placeholders = Object.keys(data).map(c => ':' + c).join(',');
     const query = `INSERT IGNORE INTO ${tableName} (${columns}) VALUES (${placeholders})`;
-    const [result]: [DBResult, FieldPacket[]] = await _DB.execute(query, data);
-    return result.affectedRows;
+    const [_rs]: [_RS, _FP[]] = await _d.execute(query, data);
+    return _rs.affectedRows;
   },
 
-  async insertIgnoreMany(
-    tableName: string,
-    data: ObjectType[],
-  ): Promise<number> {
+  async insertIgnoreMany(tableName: string, data: _D[]): Promise<number> {
     const columns = '`' + Object.keys(data[0]).join('`,`') + '`';
-    const values: unknown[][] = data.map((row) => Object.values(row));
+    const values: unknown[][] = data.map(r => Object.values(r));
     const query = `INSERT IGNORE INTO ${tableName} (${columns}) VALUES ?;`;
-    const [result]: [DBResult, FieldPacket[]] = await _DB.query(query, [
-      values,
-    ]);
-    return result.affectedRows;
+    const [_rs]: [_RS, _FP[]] = await _d.query(query, [values]);
+    return _rs.affectedRows;
   },
 
   async executeDirect(query: string): Promise<void> {
-    await _DB.execute(query);
-  },
+    await _d.execute(query);
+  }
 };

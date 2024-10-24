@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import { DateTime } from 'luxon';
 
 import { db } from '../modules/Database.js';
 import ThrowError from '../modules/ThrowError.js';
@@ -7,34 +8,29 @@ import { UserInput } from '../types/user';
 
 export default {
   Mutation: {
-    createUser: async (_, { input }: { input: UserInput }) => {
+    register: async (_, input: UserInput) => {
       if (!Validate.email(input.email)) {
         ThrowError('Your email is invalid.');
       }
-      if (!Validate.object(input.phone)) {
-        ThrowError('Your phone is invalid.');
-      }
 
-      const userExists = await db.findOne('user', { email: input.email });
+      const userExists = await db.findOne('users', { email: input.email });
 
       if (userExists) {
         ThrowError('User with this email already exists.');
       }
 
-      const phoneNumber = `+${input.phone.prefix}${parseInt(input.phone.number)}`;
-
-      const password = input.password;
-
-      const hash = await bcrypt.hash(password, 10);
+      const hash = await bcrypt.hash(input.password, 10);
 
       const user = {
         ...input,
         password: hash,
-        phone: phoneNumber,
-        status: 'ACTIVE',
+        role: 'STUDENT',
+        status: 'PENDING',
+        created_at: DateTime.now().setZone('Africa/Lagos').toJSDate(),
+        updated_at: DateTime.now().setZone('Africa/Lagos').toJSDate()
       };
 
-      const userCreated = await db.insertOne('user', user);
+      const userCreated = await db.insertOne('users', user);
 
       if (userCreated < 1) {
         ThrowError(
@@ -42,69 +38,73 @@ export default {
         );
       }
 
-      return true;
+      return user;
     },
 
-    updateUser: async (
-      _,
-      { userId, input }: { userId: number; input: UserInput },
-    ) => {
-      const userExists = await db.findOne('user', { id: userId });
+    approveUser: async (_, { userId, status }: { userId: string, status: string }, context) => {
+      const user = await db.findOne('users', { id: userId });
 
-      if (!userExists) {
+      if (!user) {
         ThrowError('User not found.');
       }
 
-      let phone;
-
-      if (input.phone) {
-        phone = `+${input.phone.prefix}${parseInt(input.phone.number)}`;
+      if (context.user.role !== 'ADMIN') {
+        ThrowError('Only admins can approve users.');
       }
 
       const updatedData = {
-        ...input,
-        phone,
+        status,
+        class_id: context.user.class_id,
+        approved_by: context.user.id,
+        updated_at: new Date()
       };
 
-      const userUpdated = await db.updateOne('user', updatedData, {
+      const userUpdated = await db.updateOne('users', updatedData, {
         id: userId,
       });
 
       if (userUpdated < 1) {
         ThrowError(
-          'An error occurred while updating your account, please try again later.',
+          'An error occurred while updating the user status.',
         );
       }
 
-      return true;
+      return {
+        ...user,
+        ...updatedData
+      };
     },
 
-    deleteUser: async (_, { userId }: { userId: number }) => {
-      const userExists = await db.findOne('user', { id: userId });
+    updateProfile: async (_, input, context) => {
+      const userExists = await db.findOne('users', { id: context.user.id });
 
       if (!userExists) {
         ThrowError('User not found.');
       }
 
-      const userDeleted = await db.deleteOne('user', { id: userId });
+      const updatedInput = {
+        ...input,
+        updated_at: new Date()
+      };
 
-      if (userDeleted < 1) {
+      const userUpdated = await db.updateOne('users', updatedInput, {
+        id: context.user.id,
+      });
+
+      if (userUpdated < 1) {
         ThrowError(
-          'An error occurred while deleting the user, please try again later.',
+          'An error occurred while updating your profile.',
         );
       }
 
-      return true;
+      return {
+        ...userExists,
+        ...updatedInput
+      };
     },
-    updatePassword: async (
-      _,
-      {
-        userId,
-        oldPassword,
-        newPassword,
-      }: { userId: number; oldPassword: string; newPassword: string },
-    ) => {
-      const user = await db.findOne('user', { id: userId });
+
+    changePassword: async (_, { oldPassword, newPassword }, context) => {
+      const user = await db.findOne('users', { id: context.user.id });
 
       if (!user) {
         ThrowError('User not found.');
@@ -118,14 +118,17 @@ export default {
       const hash = await bcrypt.hash(newPassword, 10);
 
       const userUpdated = await db.updateOne(
-        'user',
-        { password: hash },
-        { id: userId },
+        'users',
+        {
+          password: hash,
+          updated_at: new Date()
+        },
+        { id: context.user.id },
       );
 
       if (userUpdated < 1) {
         ThrowError(
-          'An error occurred while updating the password, please try again later.',
+          'An error occurred while updating the password.',
         );
       }
 
@@ -134,8 +137,8 @@ export default {
   },
 
   Query: {
-    getUser: async (_, { userId }: { userId: number }) => {
-      const user = await db.findOne('user', { id: userId });
+    me: async (_, __, context) => {
+      const user = await db.findOne('users', { id: context.user.id });
 
       if (!user) {
         ThrowError('User not found.');
@@ -144,14 +147,25 @@ export default {
       return user;
     },
 
-    getUsers: async () => {
-      const users = await db.findMany('user');
+    users: async (_, { status }) => {
+      const query = status ? { status } : {};
+      const users = await db.findMany('users', query);
 
       if (!users) {
         ThrowError('No users found.');
       }
 
       return users;
+    },
+
+    user: async (_, { id }) => {
+      const user = await db.findOne('users', { id });
+
+      if (!user) {
+        ThrowError('User not found.');
+      }
+
+      return user;
     },
   },
 };

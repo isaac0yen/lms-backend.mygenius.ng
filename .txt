@@ -1,0 +1,21 @@
+This LMS at the original registration state collects information of the students and then notifies the admins to approve the following people who registered.
+
+The following information is collected for student registration:
+
+1. First name, Last name and Middle name - To properly identify and address the student in official records and communications
+2. Date of Birth - To verify age requirements and track student demographics
+3. Email - For official communications and login credentials
+4. Religion - For accommodation of religious practices and holidays
+5. Phone number - For emergency contacts and important notifications
+6. Gender - For demographic records and appropriate accommodations
+7. Password - They will be encrypted and stored in the database
+
+Well aterwords, what they see on the dashboard is the last announcement made by the admin.
+On the menu bar there would be a sign-out, all-announcements, and a feedback section and a profile section.
+
+For admins, there would be a section for them to post information,  with a title and body and optional files or images.
+The images would be stored as a file with the name in the database, same as files.
+
+When the student is being entered into the databasem based on the user who approved them's class_id, the student's class_id is set to the class_id of the user who approved them.
+
+And The anouncements section is categorized per class_id of the person who posted the announcement.
