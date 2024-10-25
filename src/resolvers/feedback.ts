@@ -18,11 +18,15 @@ export default {
   },
 
   Mutation: {
-    createFeedback: async (_, { message }, context) => {
+    create_feedback: async (_, { message }, context) => {
+      if (!context || !context.user || !context.id) {
+        ThrowError('RELOGIN');
+      }
+
       const feedback = {
-        user_id: context.user.id,
+        user_id: context.id,
         message,
-        created_at: DateTime.now().setZone('Africa/Lagos').toJSDate()
+        createdAt: DateTime.now().setZone('Africa/Lagos').toJSDate()
       };
 
       const feedbackId = await db.insertOne('feedback', feedback);

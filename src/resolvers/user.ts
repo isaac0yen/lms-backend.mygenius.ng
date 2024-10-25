@@ -38,29 +38,34 @@ export default {
         );
       }
 
-      return user;
+      return true;
     },
 
-    approveUser: async (_, { userId, status }: { userId: string, status: string }, context) => {
-      const user = await db.findOne('users', { id: userId });
+    approve_user: async (_, { user_id, status }: { user_id: string, status: string }, context) => {
+
+      if (!context?.id || context.id < 1) {
+        ThrowError('RELOGIN');
+      }
+
+      const user = await db.findOne('users', { id: user_id });
 
       if (!user) {
         ThrowError('User not found.');
       }
 
-      if (context.user.role !== 'ADMIN') {
+      if (context.role !== 'ADMIN') {
         ThrowError('Only admins can approve users.');
       }
 
       const updatedData = {
         status,
-        class_id: context.user.class_id,
-        approved_by: context.user.id,
-        updated_at: new Date()
+        class_id: context.class_id,
+        approved_by: context.id,
+        updated_at: DateTime.now().setZone('Africa/Lagos').toJSDate()
       };
 
       const userUpdated = await db.updateOne('users', updatedData, {
-        id: userId,
+        id: user_id,
       });
 
       if (userUpdated < 1) {
@@ -69,14 +74,16 @@ export default {
         );
       }
 
-      return {
-        ...user,
-        ...updatedData
-      };
+      return true;
     },
 
-    updateProfile: async (_, input, context) => {
-      const userExists = await db.findOne('users', { id: context.user.id });
+    update_profile: async (_, input, context) => {
+
+      if (!context?.id || context.id < 1) {
+        ThrowError('RELOGIN');
+      }
+
+      const userExists = await db.findOne('users', { id: context.id });
 
       if (!userExists) {
         ThrowError('User not found.');
@@ -84,11 +91,11 @@ export default {
 
       const updatedInput = {
         ...input,
-        updated_at: new Date()
+        updatedAt: new Date()
       };
 
       const userUpdated = await db.updateOne('users', updatedInput, {
-        id: context.user.id,
+        id: context.id,
       });
 
       if (userUpdated < 1) {
@@ -97,14 +104,15 @@ export default {
         );
       }
 
-      return {
-        ...userExists,
-        ...updatedInput
-      };
+      return true;
     },
 
-    changePassword: async (_, { oldPassword, newPassword }, context) => {
-      const user = await db.findOne('users', { id: context.user.id });
+    change_password: async (_, { oldPassword, newPassword }, context) => {
+      if (!context?.id || context.id < 1) {
+        ThrowError('RELOGIN');
+      }
+
+      const user = await db.findOne('users', { id: context.id });
 
       if (!user) {
         ThrowError('User not found.');
@@ -121,9 +129,9 @@ export default {
         'users',
         {
           password: hash,
-          updated_at: new Date()
+          updatedAt: new Date()
         },
-        { id: context.user.id },
+        { id: context.id },
       );
 
       if (userUpdated < 1) {
@@ -138,7 +146,12 @@ export default {
 
   Query: {
     me: async (_, __, context) => {
-      const user = await db.findOne('users', { id: context.user.id });
+
+      if (!context?.id || context.id < 1) {
+        ThrowError('RELOGIN');
+      }
+
+      const user = await db.findOne('users', { id: context.id });
 
       if (!user) {
         ThrowError('User not found.');
@@ -147,7 +160,12 @@ export default {
       return user;
     },
 
-    users: async (_, { status }) => {
+    users: async (_, { status }, context) => {
+
+      if (!context?.id || context.id < 1) {
+        ThrowError('RELOGIN');
+      }
+
       const query = status ? { status } : {};
       const users = await db.findMany('users', query);
 
@@ -158,7 +176,12 @@ export default {
       return users;
     },
 
-    user: async (_, { id }) => {
+    user: async (_, { id }, context) => {
+
+      if (!context?.id || context.id < 1) {
+        ThrowError('RELOGIN');
+      }
+
       const user = await db.findOne('users', { id });
 
       if (!user) {

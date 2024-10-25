@@ -15,40 +15,40 @@ enum Gender {
 }
 
 export interface UserInput {
-  firstName: string;
-  lastName: string;
-  middleName?: string;
+  first_name: string;
+  last_name: string;
+  middle_name?: string;
   email: string;
   password: string;
-  dateOfBirth: string;
+  date_of_birth: string;
   religion: string;
-  phoneNumber: string;
+  phone_number: string;
   gender: Gender;
 }
 
 export interface User {
   id: number;
-  firstName: string;
-  lastName: string;
-  middleName?: string;
+  first_name: string;
+  last_name: string;
+  middle_name?: string;
   email: string;
-  dateOfBirth: string;
+  date_of_birth: string;
   religion: string;
-  phoneNumber: string;
+  phone_number: string;
   gender: Gender;
   role: Role;
   status: Status;
-  classId?: number;
-  approvedBy?: User;
-  createdAt: string;
-  updatedAt: string;
+  class_id?: number;
+  approved_by?: User;
+  created_at: string;
+  updated_at: string;
   class?: Class;
 }
 
 export interface Class {
   id: number;
   name: string;
-  createdAt: string;
+  created_at: string;
   users: User[];
   announcements: Announcement[];
 }
@@ -56,5 +56,5 @@ export interface Class {
 interface Announcement {
   id: number;
   content: string;
-  createdAt: string;
+  created_at: string;
 }

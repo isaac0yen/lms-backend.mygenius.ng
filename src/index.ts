@@ -30,6 +30,7 @@ const { url } = await startStandaloneServer(server, {
   listen: { port: 4000 },
   context: async ({ req, res }) => {
     const config = await Auth(req, res);
+    console.log(config);
     return config;
   },
 });

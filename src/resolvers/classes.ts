@@ -4,11 +4,17 @@ import ThrowError from '../modules/ThrowError.js';
 
 export default {
   Query: {
-    classes: async () => {
+    classes: async (_, __, context) => {
+      if (!context?.id || context.id < 1) {
+        ThrowError('RELOGIN');
+      }
       return await db.findMany('classes', {});
     },
 
-    class: async (_, { id }) => {
+    class: async (_, { id }, context) => {
+      if (!context?.id || context.id < 1) {
+        ThrowError('RELOGIN');
+      }
       const classData = await db.findOne('classes', { id });
       if (!classData) {
         ThrowError('Class not found');
@@ -18,8 +24,11 @@ export default {
   },
 
   Mutation: {
-    createClass: async (_, { name }, context) => {
-      if (context.user.role !== 'ADMIN') {
+    create_class: async (_, { name }, context) => {
+      if (!context?.id || context.id < 1) {
+        ThrowError('RELOGIN');
+      }
+      if (context.role !== 'ADMIN') {
         ThrowError('Only admins can create classes');
       }
 
@@ -28,12 +37,13 @@ export default {
         created_at: DateTime.now().setZone('Africa/Lagos').toJSDate()
       };
 
-      const classId = await db.insertOne('classes', classData);
+      const class_id = await db.insertOne('classes', classData);
 
-      return {
-        ...classData,
-        id: classId
-      };
+      if (class_id < 1) {
+        ThrowError('Error creating class');
+      }
+
+      return true;
     }
   }
 };

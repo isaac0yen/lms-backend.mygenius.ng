@@ -18,24 +18,27 @@ function validateAccessToken(token: string): VerifiedToken | null {
 }
 
 const Auth = async (req, res): Promise<Record<string, unknown> | null> => {
+
   try {
     const accessToken = req.headers['lms-access'] as string | undefined;
 
     if (!accessToken) {
-      ThrowError('RELOGIN');
+      return null;
     }
 
     const isValidAccessToken = validateAccessToken(accessToken);
 
     if (isValidAccessToken) {
-      return isValidAccessToken.userObject ?? ThrowError('RELOGIN');
+      return isValidAccessToken;
     }
 
-    ThrowError('RELOGIN');
-  } catch (err) {
-    Logger.error('An error occured in Auth line 74 for user with id:', err);
-    ThrowError('RELOGIN');
+
+    return null;
+  } catch (error) {
+    return null;
+
   }
+
 };
 
 export default Auth;

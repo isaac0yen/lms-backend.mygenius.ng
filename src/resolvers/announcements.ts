@@ -6,13 +6,19 @@ import { MAX_FILE_SIZE_IN_MB } from '../settings/index.js';
 
 export default {
   Query: {
-    announcements: async (_, { classId }) => {
-      const query = classId ? { class_id: classId } : {};
+    announcements: async (_, { class_id }, context) => {
+      if (!context?.id || context.id < 1) {
+        ThrowError('RELOGIN');
+      }
+      const query = class_id ? { class_id } : {};
       const announcements = await db.findMany('announcements', query);
       return announcements;
     },
 
-    announcement: async (_, { id }) => {
+    announcement: async (_, { id }, context) => {
+      if (!context?.id || context.id < 1) {
+        ThrowError('RELOGIN');
+      }
       const announcement = await db.findOne('announcements', { id });
       if (!announcement) {
         ThrowError('Announcement not found');
@@ -22,16 +28,19 @@ export default {
   },
 
   Mutation: {
-    createAnnouncement: async (_, { title, body, classId, attachments }, context) => {
-      if (context.user.role !== 'ADMIN') {
+    create_announcement: async (_, { title, body, class_id, attachments }, context) => {
+      if (!context?.id || context.id < 1) {
+        ThrowError('RELOGIN');
+      }
+      if (context.role !== 'ADMIN') {
         ThrowError('Only admins can create announcements');
       }
 
       const announcement = {
         title,
         body,
-        class_id: classId,
-        created_by: context.user.id,
+        class_id,
+        created_by: context.id,
         created_at: DateTime.now().setZone('Africa/Lagos').toJSDate()
       };
 
@@ -41,8 +50,6 @@ export default {
         for (const file of attachments) {
           const { filename, createReadStream } = await file;
           const stream = createReadStream();
-          
-          // Get file size in bytes and convert to MB
           const chunks = [];
           for await (const chunk of stream) {
             chunks.push(chunk);
@@ -65,8 +72,7 @@ export default {
         }
       }
 
-      return {
-        ...announcement,
-        id: announcementId
-      };
-    }  }};
+      return true;
+    }
+  }
+};

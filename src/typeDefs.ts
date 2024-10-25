@@ -2,150 +2,144 @@ const typeDefs = `#graphql
   scalar JSON
 
   type User {
-  id: ID!
-  firstName: String!
-  lastName: String!
-  middleName: String
-  email: String!
-  dateOfBirth: String!
-  religion: String!
-  phoneNumber: String!
-  gender: Gender!
-  role: Role!
-  status: Status!
-  classId: Int
-  approvedBy: User
-  createdAt: String!
-  updatedAt: String!
-  class: Class
-}
-
-type Class {
-  id: ID!
-  name: String!
-  createdAt: String!
-  users: [User!]!
-  announcements: [Announcement!]!
-}
-
-type Announcement {
-  id: ID!
-  title: String!
-  body: String!
-  classId: Int!
-  createdBy: User!
-  createdAt: String!
-  attachments: [Attachment!]!
-}
-
-type Attachment {
-  id: ID!
-  announcementId: Int!
-  fileName: String!
-  filePath: String!
-  fileType: String!
-  createdAt: String!
-}
-
-type Feedback {
-  id: ID!
-  userId: Int!
-  message: String!
-  createdAt: String!
-  user: User!
-}
-
-enum Gender {
-  MALE
-  FEMALE
-}
-
-enum Role {
-  ADMIN
-  STUDENT
-}
-
-enum Status {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-type AuthPayload {
-  accessToken: String!
-  refreshToken: String!
-  user: User!
-}
-
-type Query {
-  me: User!
-  users(status: Status): [User!]!
-  user(id: ID!): User
-  classes: [Class!]!
-  class(id: ID!): Class
-  announcements(classId: Int): [Announcement!]!
-  announcement(id: ID!): Announcement
-  feedback(id: ID!): Feedback
-  feedbacks: [Feedback!]!
-}
-
-type Mutation {
-  register(
-    firstName: String!
-    lastName: String!
-    middleName: String
+    id: ID!
+    first_name: String!
+    last_name: String!
+    middle_name: String
     email: String!
-    password: String!
-    dateOfBirth: String!
+    date_of_birth: String!
     religion: String!
-    phoneNumber: String!
+    phone_number: String!
     gender: Gender!
-  ): User!
-
-  login(
-    email: String!
-    password: String!
-  ): AuthPayload!
-
-  refreshToken(
-    refreshToken: String!
-  ): AuthPayload!
-
-  approveUser(
-    userId: ID!
+    role: Role!
     status: Status!
-  ): User!
+    class_id: Int
+    approved_by: User
+    created_at: String!
+    updated_at: String!
+    class: Class
+  }
 
-  createAnnouncement(
+  type Class {
+    id: ID!
+    name: String!
+    created_at: String!
+    users: [User!]!
+    announcements: [Announcement!]!
+  }
+
+  type Announcement {
+    id: ID!
     title: String!
     body: String!
-    classId: Int!
-    attachments: [Upload]
-  ): Announcement!
+    class_id: Int!
+    created_by: User!
+    created_at: String!
+    attachments: [Attachment!]!
+  }
 
-  createFeedback(
+  type Attachment {
+    id: ID!
+    announcement_id: Int!
+    file_name: String!
+    file_path: String!
+    file_type: String!
+    created_at: String!
+  }
+
+  type Feedback {
+    id: ID!
+    user_id: Int!
     message: String!
-  ): Feedback!
+    created_at: String!
+    user: User!
+  }
 
-  updateProfile(
-    firstName: String
-    lastName: String
-    middleName: String
-    religion: String
-    phoneNumber: String
-  ): User!
+  enum Gender {
+    MALE
+    FEMALE
+  }
 
-  changePassword(
-    oldPassword: String!
-    newPassword: String!
-  ): Boolean!
+  enum Role {
+    ADMIN
+    STUDENT
+  }
 
-  createClass(
-    name: String!
-  ): Class!
-}
+  enum Status {
+    PENDING
+    APPROVED
+    REJECTED
+  }
 
-scalar Upload
+  type AuthPayload {
+    access_token: String!
+  }
+
+  type Query {
+    me: JSON!
+    users(status: Status): [JSON!]!
+    user(id: ID!): JSON
+    classes: [Class!]!
+    class(id: ID!): Class
+    announcements(class_id: Int): [JSON]!
+    announcement(id: ID!): JSON
+    feedback(id: ID!): JSON
+    feedbacks: [JSON!]!
+  }
+
+  type Mutation {
+    register(
+      first_name: String!
+      last_name: String!
+      middle_name: String
+      email: String!
+      password: String!
+      date_of_birth: String!
+      religion: String!
+      phone_number: String!
+      gender: Gender!
+    ): Boolean!
+
+    login(
+      email: String!
+      password: String!
+    ): AuthPayload!
+
+    approve_user(
+      user_id: ID!
+      status: Status!
+    ): Boolean!
+
+    create_announcement(
+      title: String!
+      body: String!
+      class_id: Int!
+      attachments: [Upload]
+    ): Boolean!
+
+    create_feedback(
+      message: String!
+    ): Feedback!
+
+    update_profile(
+      first_name: String
+      last_name: String
+      middle_name: String
+      religion: String
+      phone_number: String
+    ): Boolean!
+
+    change_password(
+      old_password: String!
+      new_password: String!
+    ): Boolean!
+
+    create_class(
+      name: String!
+    ): Boolean!
+  }
+
+  scalar Upload
 
 `;
 
