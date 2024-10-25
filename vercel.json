@@ -12,6 +12,5 @@
       "dest": "dist/index.js"
     }
   ],
-  "buildCommand": "npm run compile",
-  "outputDirectory": "dist"
+  "buildCommand": "npx tsc"
 }
